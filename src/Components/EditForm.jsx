@@ -1,94 +1,96 @@
-import React , {useState , useEffect} from "react";
+import React from 'react'
+import {useState, useEffect} from 'react';
 
-function EditForm({
-    editItem,
-    editIndex,
-    list,
-    setlist,
-    setEditIndex
-})
+function EditForm({edit,setedit, list , setlist})
 {
+    const [price, setprice] = useState(0);
+    const [product , setproduct] = useState('');
+    const [select, setSelect] = useState('');
+    const [quantity, setquantity] = useState(0);
 
-    const [item ,setItem] = useState(editItem.item);
-    const [description , setdescription ]= useState(editItem.description);
-    const [quantity ,setquantity] = useState(editItem.quantity);
-    const [price , setprice ]= useState(editItem.price); 
-    
-    useEffect(()=>{
-        localStorage.setItem("Expense Tracker",JSON.stringify(list));
-
-    },[list]);
-    
-    function handleEdit(e)
+   useEffect(()=>{
+    if(edit)
     {
-        e.preventDefault();
-        const update=[...list];
-        update[editIndex]={
-            item,
-            description,
-            quantity,
-            price,
-            total:Number(quantity)*Number(price)
-        }
-        setlist(update);
-        setEditIndex(null);
-
+        setproduct(edit.product);
+        setprice(edit.price);
+        setSelect(edit.select);
+        setquantity(edit.quantity);
 
     }
-        return(
-            <>
-            <form>
-                <label name = "items" > Item </label>
-                <input
-                    type = "text"
-                    value = {item}  
-                    name = "items"
-                    placeholder = "Enter the item"
-                    onChange = {(e)=>setItem(e.target.value)}
-                />  
-                <br></br>
-                <br></br>
-                <label name = "descriptions" > description </label> 
-                <input
-                    type = "text"
-                    value = {description}       
-                    name = "descriptions"
-                    placeholder = "description of the item"
-                    onChange = {(e)=>setdescription(e.target.value)}
-                />
-                <br></br>
-                <br></br>       
 
-                <label name = "quantities" > quantity </label>
-                <input  
-                    type = "number"
-                    value = {quantity}
-                    name = "quantities"
-                    min = "1"
-                    placeholder = "quantity"
-                    onChange = {(e)=>setquantity(e.target.value)}
+   },[edit]);
 
-                />
-                <br></br><br></br>            
-                <label name = "price" > price </label>
-                <input
-                    type = "number"       
-                    value = {price}
-                    name = "price"
-                    min="50"
-                    placeholder = "price"
-                    onChange = {(e)=>setprice(e.target.value)}
-                />
-                <br></br><br></br>
-                <div>   
-                    <button onClick={handleEdit}> Update </button>
-                    
+   if(!edit) return null;
 
-                </div>
 
-            </form>
-            </>
-        );
+    function handleSave(e)
+    {
+        e.preventDefault();
+
+        const totalval = Number(price)*Number(quantity);
+
+        const data={
+            id :edit.id,
+            date:edit.date,
+            price,
+            product,
+            select,
+            quantity,
+            total:totalval
+        }
+        let updatelist = list.map((value)=>(value.id===edit.id)?data:value);
+        setlist(updatelist);
+        // setproduct('');
+        // setprice(0);
+        // setquantity(0);
+        // setSelect('');  
+        setedit(null);     
+
+    }
+
+
+    return(
+        <>
+        <form>
+            <label htmlFor="product"></label>
+            <input
+                type="text"
+                name="product"
+                value={product}
+                onChange={(e)=>setproduct(e.target.value)}
+            />
+            <br></br><br></br>
+            <label htmlFor="price"></label>
+            <input
+                type="number"
+                name="price"
+                min="50"
+                value={price}
+                onChange={(e)=>setprice(e.target.value)}
+            />
+            <br></br><br></br>
+            <label htmlFor="quantity"></label>
+            <input
+                type="number"
+                name="quantity"
+                min="1"
+                value={quantity}
+                onChange={(e)=>setquantity(e.target.value)}
+            />
+            <br></br><br></br>
+            <label htmlFor="select"></label>
+            <select value={select} onChange={(e)=>setSelect(e.target.value)}>
+                <option value="food">food</option>
+                <option value="book">book</option>
+                <option value="travel">travel</option>
+                <option value="cloth">cloth</option>
+            </select>
+            <br></br><br></br>
+            <button onClick={handleSave}>save</button>
+        </form>
+        </>
+    )
+
 
 }
 export default EditForm;

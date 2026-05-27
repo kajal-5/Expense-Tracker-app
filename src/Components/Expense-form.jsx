@@ -1,183 +1,149 @@
 import React from 'react';
-import {useEffect, useState, useContext} from 'react';
+
+import {useState , useEffect} from 'react';
 import EditForm from './EditForm';
 
+function ExpenseTracker()
+{
+  const [product, setProduct] = useState('');
+  const [price , setPrice] = useState(0);
+  const [quantity , setquantity] = useState();
+  const [total ,settotal] = useState(0);
+  const [select , setSelect] = useState('');
 
-function ExpenseForm(){
-  
-  const [item ,setitem] = useState('');
-  const [price, setprice] = useState(0);
-  const [description , setdescription] = useState('');
-  const [quantity , setquantity] = useState(1);
-  const [list , setlist] = useState([]);
-  const [editIndex ,setEditIndex]= useState(null);
+  const [list, setlist] = useState([]);
+  const [Total ,setTotal] = useState(0);
 
-  // const navigate = useNavigate();
-  
-  
-  useEffect(()=>{
-    let data =localStorage.getItem("Expense Tracker");
-    if (data)
-    {
-      setlist(JSON.parse(data));
-    }
-    
-  },[]);
-  
-  useEffect(()=>{
-    localStorage.setItem("Expense Tracker",JSON.stringify(list));
-    
-  },[list]);
-  
-  
-  function handleItem(e)
-  {
-    setitem(e.target.value);
-  }
-  function handledescription(e)
-  {
-    setdescription(e.target.value);
-  }
-  function handlequantity(e)
-  {
-    setquantity(e.target.value);
-  }
-  function handleprice(e)
-  {
-    setprice(e.target.value);
-  }
-  
-  function handleSubmit(e)
-  {
-    
+  const [Edit , setEdit] = useState(null);
+
+
+
+
+  function handleSubmit(e){
     e.preventDefault();
-    if(item.trim()=='' || description.trim()=='') return alert("enter the valid input");
-    if(price<50 || quantity<1) return alert("Minimum price is 50 and minmum quatity =1");
-    const currtotal = Number(quantity)*Number(price);
-    
-    const listdata={
-      item,
-      description,
-      quantity,
-      price,
-      total:currtotal
-    }
 
-    
-    setlist((prev)=>[...prev,listdata]);
-    
-    console.log("list",list);
-    setitem('');
-    setquantity(1);
-    setdescription('');
-    setprice('');
+
+    if(price<50 || quantity <1) return alert("enter valid quantity or price");
+    if(product.trim()=='') return alert("enter valid product");
+    const totalval =Number(price)* Number(quantity);
+    const data= {
+      id : Date.now(),
+      product,
+      price,
+      select,
+      quantity,
+      total:totalval,
+      date :new Date()
+    }
+    setTotal((prev)=>prev+=totalval);
+
+    setlist((prevList) => [...prevList, data]);
+    setProduct('');
+    setPrice(0);
+    setquantity(0);
+    setSelect('');
+
+
 
   }
-  
+
+  function handleEdit(val)
+  {
+    setEdit(val);
+  }
+
   function handleCancel()
   {
-    setitem('');
-    setquantity(1);
-    setdescription('');
-    setprice('');
-    
-  }
-  
-  
-  function handleDelete(id)
-  {
-    const newlist = list.filter((val,index)=>index!==id);
-    setlist(newlist);
+    setProduct('');
+    setPrice(0);
+    setquantity(0);
+    setSelect('');    
 
   }
-  
-  
-  
+
   return (
     <>
-      <div>
-        <form>
-          <label name = "items" > Item </label>
-          <input
-            type = "text"
-            value = {item}
-            name = "items"
-            placeholder = "Enter the item"
-            onChange = {handleItem}
-          />
-          
-          <br></br>
-          <br></br>
-          <label name = "descriptions" > description </label>
-          <input
-            type = "text"
-            value = {description}
-            name = "descriptions"
-            placeholder = "description of the item"
-            onChange = {handledescription}
-          /> 
-          
-          <br></br>
-          <br></br>
-          <label name = "quantities" > quantity </label>
-          <input
-            type = "number"
-            value = {quantity}
-            name = "quantities"
-            min = "1"
-            placeholder = "quantity"
-            onChange = {handlequantity}
-          /> 
-          <br></br>
-          <br></br>
-          <label name = "price" > price </label>
-          <input
-            type = "number"
-            value = {price}
-            name = "price"
-            min="50"
-            placeholder = "price"
-            onChange = {handleprice}
-          />
-          <br></br><br></br>
-          <div>
-            <button onClick={handleSubmit}> Submit </button>
-            <button onClick={handleCancel}> Cancel </button>
-          </div>
-        </form>
-      </div>
-      
-      
-      <div>
-        <ul>
-          {list.map((val, index)=>{
-            return (
-            <div key={index}>
-              <li>
-                Your item {val.item} and quantity {val.quantity} and price {val.price} 
-                <strong>Total</strong> {val.total}
-              </li>
-                <button onClick = {()=>setEditIndex(index)}> Edit </button>
-                <button onClick = {()=>handleDelete(index)}> Delete </button>
-            </div>
-            );
-            
-          })}
-        </ul>
-        {
-          editIndex !==null && (
-            <EditForm
-            editItem={list[editIndex]}
-            editIndex={editIndex}
-            list={list}
-            setlist={setlist}
-            setEditIndex={setEditIndex}/>
-          )
-        }
-        
+    <form>
+      <label for="product"> Product</label>
+      <input
+        type="text"
+        value={product}
+        name="product"
+        placeholder="Enter the product"
+        onChange={(e)=>setProduct(e.target.value)}
+      />
+      <br></br><br></br>
+      <label htmlFor="category">Category</label>
+      <select value={select} onChange={(e)=>setSelect(e.target.value)}>
+        <option value="food" > food </option>
+        <option value="travel" > travel </option>
+        <option value="cloth" > Cloth </option>
+        <option value="books" > books</option>
+      </select>
+      <br></br><br></br>
+      <label htmlFor="quantity"> Quantity</label>
+      <input
+        type="number"
+        value={quantity}
+        name="quantity"
+        min="1"
+        placeholder="quantity"
+        onChange={(e)=>setquantity(e.target.value)}
+      />
+      <br></br><br></br>
+      <label htmlFor="price"> Price</label>
+      <input
+        type="number"
+        value={price}
+        name="price"
+        min="50"
+        placeholder="price"
+        onChange={(e)=>setPrice(e.target.value)}
+      />
+      <br></br><br></br>
+      <button onClick={handleSubmit}>Submit</button>
+      <button onClick={handleCancel}>Cancel</button>
+    </form>
 
-        
-      </div>
-    </>);
+
+    <div>
+      <ul>
+        {
+          list.map((val)=>{
+            return (
+              <>
+              <li key ={val.id}>
+                this is your item {val.product} and price {val.price} , quantity {val.quantity} and Total is {val.total}
+                <button onClick={()=>handleEdit(val)}>Edit</button>
+                <button>Cancel</button>
+              </li>
+              </>
+            );
+
+          })
+        }
+      </ul>
+      <p>Total Amount is {Total}</p>
+
+      {
+        <EditForm 
+        edit={Edit}
+        setedit={setEdit}
+        list={list}
+        setlist={setlist}/>
+      }
+    </div>
+    </>
+  );
+
+
+
+
+
+
 }
-export default ExpenseForm;
+
+
+
+
+export default ExpenseTracker;
