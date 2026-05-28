@@ -9,24 +9,40 @@ function ExpenseTracker()
 {
   const [product, setProduct] = useState('');
   const [price , setPrice] = useState(0);
-  const [quantity , setquantity] = useState();
-  const [total ,settotal] = useState(0);
+  const [quantity , setquantity] = useState(1);
   const [select , setSelect] = useState('');
 
   const [list, setlist] = useState([]);
-  const [Total ,setTotal] = useState(0);
+
+  const [Total ,setTotal] = useState(0);//amount total
 
   const [Edit , setEdit] = useState(null);
 
   useEffect(()=>{
-    let data = localStorage.getItem("expenses");
-    if(data)
-      setlist(JSON.parse(data));
+    // let data = localStorage.getItem("expenses");
+    // if(data)
+    //   setlist(JSON.parse(data));
+
+    async function fetchData(){
+      try{
+        const response = await axios.get("http://localhost:4000/expenses");
+        setlist(response.data);
+      }
+      catch(e)
+      {
+        console.error("error",e);
+      }
+    }
+
+    fetchData();
 
   },[]);
 
-  useEffect(()=>{
-    localStorage.setItem("expenses",JSON.stringify(list));
+  useEffect(()=>
+    {
+    const totalamount = list.reduce((total,val)=>total+val.total,0);
+    setTotal(totalamount);
+    // localStorage.setItem("expenses",JSON.stringify(list));
   },[list]);
 
 
@@ -48,8 +64,8 @@ function ExpenseTracker()
           total:totalval,
           date :new Date()
         }
-        setTotal((prev)=>prev+totalval);
-        await axios.post("https://cadaaed02ae7a76642eb.free.beeceptor.com/expences", data);
+        // setTotal((prev)=>prev+totalval);
+        await axios.post("http://localhost:4000/expenses", data);
 
 
         setlist((prevList) => [...prevList, data]);
@@ -84,10 +100,12 @@ function ExpenseTracker()
   {
     try{
       let updatedata= list.filter((val)=>val.id!==id);
+
+      // let deletedItem = list.find((val)=>val.id===id);
       setlist(updatedata);
-      await axios.delete(`https://cadaaed02ae7a76642eb.free.beeceptor.com/expences/${id}`);
-      let totalupdate= Total-updatedata.total;
-      setTotal(totalupdate);
+      await axios.delete(`http://localhost:4000/expenses/${id}`);
+  
+      // setTotal((prev)=>prev-deletedItem.total);
     }
     catch(e)
     {
@@ -147,13 +165,11 @@ function ExpenseTracker()
         {
           list.map((val)=>{
             return (
-              <>
               <li key ={val.id}>
                 this is your item {val.product} and price {val.price} , quantity {val.quantity} and Total is {val.total}
                 <button onClick={()=>handleEdit(val)}>Edit</button>
                 <button onClick={()=>handleDelete(val.id)}>Delete</button>
               </li>
-              </>
             );
 
           })
@@ -167,8 +183,7 @@ function ExpenseTracker()
         setedit={setEdit}
         list={list}
         setlist={setlist}
-        Total={Total}
-        setTotal={setTotal}/>
+        />
       }
     </div>
     </>

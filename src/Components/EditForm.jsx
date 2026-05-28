@@ -2,19 +2,13 @@ import React from 'react'
 import {useState, useEffect} from 'react';
 import axios from 'axios';
 
-function EditForm({edit,setedit, list , setlist, Total,setTotal})
+function EditForm({edit,setedit, list , setlist})
 {
     const [price, setprice] = useState(0);
     const [product , setproduct] = useState('');
     const [select, setSelect] = useState('');
     const [quantity, setquantity] = useState(0);
 
-    useEffect(()=>{
-        let data= localStorage.getItem("expenses");
-        if(data)
-            setlist(JSON.parse(data));
-
-    },[]);
 
    useEffect(()=>{
     if(edit)
@@ -25,9 +19,9 @@ function EditForm({edit,setedit, list , setlist, Total,setTotal})
         setquantity(edit.quantity);
 
     }
-    localStorage.setItem("expenses",JSON.stringify(list));
+    // localStorage.setItem("expenses",JSON.stringify(list));
 
-   },[edit]);
+   },[edit,list]);
 
    if(!edit) return null;
 
@@ -38,7 +32,7 @@ function EditForm({edit,setedit, list , setlist, Total,setTotal})
         {
             e.preventDefault();
 
-            const oldItem = list.find((val)=>val.id==edit.id);
+            // const oldItem = list.find((val)=>val.id==edit.id);
              const newtotal = Number(price)*Number(quantity);
 
             const data={
@@ -51,8 +45,9 @@ function EditForm({edit,setedit, list , setlist, Total,setTotal})
                 total:newtotal
             }
 
-            setTotal((prev)=>prev - oldItem.total + newtotal);
-            await axios.put(`https://cadaaed02ae7a76642eb.free.beeceptor.com/expences/${edit.id}`,data);
+  
+            
+            await axios.put(`http://localhost:4000/expenses/${edit.id}`,data);
             let updatelist = list.map((value)=>(value.id===edit.id)?data:value);
             setlist(updatelist);  
             setedit(null);  
