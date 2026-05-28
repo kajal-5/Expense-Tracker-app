@@ -1,12 +1,20 @@
 import React from 'react'
 import {useState, useEffect} from 'react';
+import axios from 'axios';
 
-function EditForm({edit,setedit, list , setlist})
+function EditForm({edit,setedit, list , setlist, Total,setTotal})
 {
     const [price, setprice] = useState(0);
     const [product , setproduct] = useState('');
     const [select, setSelect] = useState('');
     const [quantity, setquantity] = useState(0);
+
+    useEffect(()=>{
+        let data= localStorage.getItem("expenses");
+        if(data)
+            setlist(JSON.parse(data));
+
+    },[]);
 
    useEffect(()=>{
     if(edit)
@@ -17,34 +25,42 @@ function EditForm({edit,setedit, list , setlist})
         setquantity(edit.quantity);
 
     }
+    localStorage.setItem("expenses",JSON.stringify(list));
 
    },[edit]);
 
    if(!edit) return null;
 
 
-    function handleSave(e)
+    async function handleSave(e)
     {
-        e.preventDefault();
+        try
+        {
+            e.preventDefault();
 
-        const totalval = Number(price)*Number(quantity);
+            const oldItem = list.find((val)=>val.id==edit.id);
+             const newtotal = Number(price)*Number(quantity);
 
-        const data={
-            id :edit.id,
-            date:edit.date,
-            price,
-            product,
-            select,
-            quantity,
-            total:totalval
-        }
-        let updatelist = list.map((value)=>(value.id===edit.id)?data:value);
-        setlist(updatelist);
-        // setproduct('');
-        // setprice(0);
-        // setquantity(0);
-        // setSelect('');  
-        setedit(null);     
+            const data={
+                id :edit.id,
+                date:edit.date,
+                price,
+                product,
+                select,
+                quantity,
+                total:newtotal
+            }
+
+            setTotal((prev)=>prev - oldItem.total + newtotal);
+            await axios.put(`https://cadaaed02ae7a76642eb.free.beeceptor.com/expences/${edit.id}`,data);
+            let updatelist = list.map((value)=>(value.id===edit.id)?data:value);
+            setlist(updatelist);  
+            setedit(null);  
+        } 
+        catch(e)
+        {
+            console.error("error",e);
+        }  
 
     }
 

@@ -1,7 +1,9 @@
 import React from 'react';
-
 import {useState , useEffect} from 'react';
 import EditForm from './EditForm';
+import Search from './Search';
+import axios from 'axios';
+
 
 function ExpenseTracker()
 {
@@ -16,32 +18,50 @@ function ExpenseTracker()
 
   const [Edit , setEdit] = useState(null);
 
+  useEffect(()=>{
+    let data = localStorage.getItem("expenses");
+    if(data)
+      setlist(JSON.parse(data));
+
+  },[]);
+
+  useEffect(()=>{
+    localStorage.setItem("expenses",JSON.stringify(list));
+  },[list]);
 
 
 
-  function handleSubmit(e){
-    e.preventDefault();
+  async function handleSubmit(e){
+    try{
+        e.preventDefault();
 
 
-    if(price<50 || quantity <1) return alert("enter valid quantity or price");
-    if(product.trim()=='') return alert("enter valid product");
-    const totalval =Number(price)* Number(quantity);
-    const data= {
-      id : Date.now(),
-      product,
-      price,
-      select,
-      quantity,
-      total:totalval,
-      date :new Date()
+        if(price<50 || quantity <1) return alert("enter valid quantity or price");
+        if(product.trim()=='') return alert("enter valid product");
+        const totalval =Number(price)* Number(quantity);
+        const data= {
+          id : Date.now(),
+          product,
+          price,
+          select,
+          quantity,
+          total:totalval,
+          date :new Date()
+        }
+        setTotal((prev)=>prev+totalval);
+        await axios.post("https://cadaaed02ae7a76642eb.free.beeceptor.com/expences", data);
+
+
+        setlist((prevList) => [...prevList, data]);
+        setProduct('');
+        setPrice(0);
+        setquantity(0);
+        setSelect('');
     }
-    setTotal((prev)=>prev+=totalval);
-
-    setlist((prevList) => [...prevList, data]);
-    setProduct('');
-    setPrice(0);
-    setquantity(0);
-    setSelect('');
+    catch(e)
+    {
+      console.error("error",e);
+    }
 
 
 
@@ -60,11 +80,29 @@ function ExpenseTracker()
     setSelect('');    
 
   }
+  async function handleDelete(id)
+  {
+    try{
+      let updatedata= list.filter((val)=>val.id!==id);
+      setlist(updatedata);
+      await axios.delete(`https://cadaaed02ae7a76642eb.free.beeceptor.com/expences/${id}`);
+      let totalupdate= Total-updatedata.total;
+      setTotal(totalupdate);
+    }
+    catch(e)
+    {
+      console.error("error",e);
+    }
+
+  }
 
   return (
     <>
+    <div>
+      <Search list={list}/>
+    </div>
     <form>
-      <label for="product"> Product</label>
+      <label htmlFor="product"> Product</label>
       <input
         type="text"
         value={product}
@@ -104,8 +142,6 @@ function ExpenseTracker()
       <button onClick={handleSubmit}>Submit</button>
       <button onClick={handleCancel}>Cancel</button>
     </form>
-
-
     <div>
       <ul>
         {
@@ -115,7 +151,7 @@ function ExpenseTracker()
               <li key ={val.id}>
                 this is your item {val.product} and price {val.price} , quantity {val.quantity} and Total is {val.total}
                 <button onClick={()=>handleEdit(val)}>Edit</button>
-                <button>Cancel</button>
+                <button onClick={()=>handleDelete(val.id)}>Delete</button>
               </li>
               </>
             );
@@ -130,20 +166,12 @@ function ExpenseTracker()
         edit={Edit}
         setedit={setEdit}
         list={list}
-        setlist={setlist}/>
+        setlist={setlist}
+        Total={Total}
+        setTotal={setTotal}/>
       }
     </div>
     </>
   );
-
-
-
-
-
-
 }
-
-
-
-
 export default ExpenseTracker;
